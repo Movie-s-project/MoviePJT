@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load bootstrap5 %}
+{% block content %}
+
+<section class="main-container" >
+
+  <div class="" style="padding-top: 8px + 1vh;">
+    <div class="mx-5 " style="margin: 7vmin 0;">
+      <div class=" d-flex justify-content-between ">
+        <h1 class=" " style="max-width: 50rem;">{{ person.username }}님의 프로필</h1>
+        {% if request.user == person %}
+        <a href="{% url 'accounts:update' %}" role="button" style="background-color: #870FEA; color: #F3F3F3; --bs-btn-padding-y: .65rem; --bs-btn-padding-x: .8rem; 
+        --bs-btn-font-size: 1.2rem; margin-top:60px;" class="btn">회원정보수정</a>
+        
+        {% endif %}
+      </div>
+
+    <div>
+        <div>
+          팔로워 : {{ person.followers.all | length }}  &nbsp | &nbsp 팔로잉 : {{ person.followings.all | length }}
+        </div><br>
+        {% if request.user != person %}
+            <div>
+                <form action="{% url 'accounts:follow' person.username %}" method="POST">
+                    {% csrf_token %}
+                    {% if request.user in person.followers.all %}
+                        <input type="submit" value="언팔로우" style="background-color: #870FEA; color: #F3F3F3; --bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; 
+                        --bs-btn-font-size: .9rem;" class="btn">
+                    {% else %}
+                        <input type="submit" value="팔로우" style="background-color: #870FEA; color: #F3F3F3; --bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; 
+                        --bs-btn-font-size: .9rem;" class="btn">
+                    {% endif %}
+                </form>
+            </div>
+        {% endif %}
+    </div>
+   
+      
+      
+
+      <hr class="mx-auto">
+      <h3 style="margin-top: 2vh;">{{ person.username }}님이 찜한 영화</h3>
+      {% if likes|length >= 1 %}
+        <div class="box mt-4">
+          {% for like in likes %}
+          <div class="item-container">
+            <a class="my-auto" href="{% url 'movies:detail' like.pk %}">
+              <div class="image">
+                <img src="https://image.tmdb.org/t/p/w500{{ like.poster_path }}" 
+                  class="card-img-top poster-img" alt="...">
+              </div>
+              <div class="caption">
+                <p>{{ like.title }}</p>
+              </div>
+            </a>
+          </div>
+          {% endfor %} 
+        </div>
+      {% else %}
+        <br>
+        <p>아직 찜한 영화가 없습니다.</p>
+        <div>
+          {% if request.user == person %}
+          <a href="{% url 'movies:all' %}" style="text-decoration: none; color: gray;"><p class="none">영화 찜하러 가기</p></a>
+          {% endif %}
+        </div>
+      {% endif %}
+      <br>
+      
+      <hr class="mx-auto ">
+      <h3 style="margin-top: 2vh;">{{ person.username }}님이 리뷰를 작성한 영화</h3>
+      {% if reviewed|length >= 1 %}
+        <div class="box mt-4">
+          {% for idx, movie in reviewed %}
+          <div class="item-container">
+            <a class="my-auto" href="{% url 'community:detail' idx %}">
+              <div class="image">
+                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
+                  class="card-img-top poster-img" alt="...">
+              </div>
+              <div class="caption">
+                <p>{{ movie.title }}</p>
+              </div>
+            </a>
+          </div>
+          {% endfor %} 
+        </div>
+      {% else %}
+        <br>
+        <p>아직 리뷰를 작성한 영화가 없습니다.</p>
+        <div>
+          {% if request.user == person %}
+          <a href="{% url 'community:index' %}" style="text-decoration: none; color: gray"><p class="none">리뷰 남기러 가기</p></a>
+          {% endif %}
+        </div>
+      {% endif %}
+      <br>
+
+
+    </div>
+    <div>
+
+    </div>
+  </div>
+</section> 
+
+
+<style>
+  .text-muted {
+    color: #686868!important;
+  }
+
+  .none:hover {
+    color: #870FEA; 
+  }
+</style>
+
+{% endblock content %}
+
+{% block script %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  const form = document.querySelector('#follow-form')
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault()
+    
+    const userPk = event.target.dataset.userPk
+    
+    axios({
+      method: 'post',
+      url: `/accounts/${userPk}/follow/`, 
+      headers: {'X-CSRFToken': csrftoken,}
+    })
+    .then((response) => {
+      const isFollowed = response.data.is_followed
+      const followBtn = document.querySelector('#follow-form > input[type=submit]')
+
+      if (isFollowed === true) {
+        followBtn.value = '언팔로우'
+      } else {
+        followBtn.value = '팔로우'
+      }
+
+      const followersCountTag = document.querySelector('#followers-count')
+      const followingsCountTag = document.querySelector('#followings-count')
+      const followersCount = response.data.followers_count
+      const followingsCount = response.data.followings_count
+      followersCountTag.innerText = followersCount
+      followingsCountTag.innerText = followingsCount
+
+      console.log(response)
+    })
+    .catch((error) => {
+      console.log(error.response)
+    })
+  })
+</script>
+{% endblock script %}

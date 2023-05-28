@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+ 
+{% load static %}
+{% block content %}
+ 
+
+<div style="padding-top: 8px + 1vh;">
+  <section class="main-container" >
+    <div class="d-flex justify-content-between mx-4">
+      <h2 id="myList" style="margin-top: 7vmin; font-weight: bold;">전체 리뷰 목록</h2>
+      <a href="{% url 'community:create' %}" role="button" style="color: white; --bs-btn-padding-y: .5rem; --bs-btn-padding-x: .6rem; 
+      --bs-btn-font-size: 1rem; margin-top: 55px; background-color: #870FEA; color: white;" class="mb-5 btn">리뷰 작성</a>
+    </div>
+    <div class="box h-100 mt-4">
+      {% for review in reviews %}
+      <div class="hover">
+          <a class="position-relative my-auto" href="{% url 'community:detail' review.pk %}">
+            <img src="https://image.tmdb.org/t/p/original{{ review.movie.poster_path }}" 
+            class="poster-img" alt="{{ review.movie.title }}_poster">
+          </a>
+          <div class="text-truncate h-50" style="background-color: rgba(0, 0, 0, 0.55);  padding: 0.3vmin 0.3vmin;"> 
+            <p class="text-break mt-3 text-truncate fs-6" style="font-size:calc(13px + 1vw); color: #F3F3F3;">{{ review.title }}</p>
+            <small style="color: lightgray;">{{ review.user }}</small><br>
+            <small style="color: lightgray;">{{ review.created_at | date:'Y-m-d H:i' }}</small>
+          </div>  
+      </div>
+      {% endfor %} 
+    </div>
+  </section>
+  <br><br><br><br><br><br><br>
+</div>
+
+
+<style scoped>
+  .hover {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    -webkit-transition: .5s ease-in-out;
+    transition: .5s ease-in-out;
+  }
+  .hover:hover {
+    -webkit-transform: scale(1.05);
+    transform: scale(1.05);
+  }
+</style>
+
+{% endblock content %}
+
+
+
+
+
+
+
